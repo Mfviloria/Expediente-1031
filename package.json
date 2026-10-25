@@ -3,6 +3,14 @@
   "version": "1.0.0",
   "description": "Juego de deducción con panel para el facilitador (sin dependencias)",
   "private": true,
-  "scripts": { "start": "node server.js" },
-  "engines": { "node": ">=18" }
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@netlify/database": "^2.0.1",
+    "@netlify/functions": "^6.0.3"
+  }
 }

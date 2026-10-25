@@ -1,0 +1,5 @@
+CREATE TABLE teams (
+  pid TEXT PRIMARY KEY,
+  data JSONB NOT NULL,
+  updated BIGINT NOT NULL
+);
