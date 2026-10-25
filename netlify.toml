@@ -1,0 +1,12 @@
+[build]
+  publish = "public"
+
+[[redirects]]
+  from = "/facilitador"
+  to = "/facilitador.html"
+  status = 200
+
+[[redirects]]
+  from = "/facilitador/"
+  to = "/facilitador.html"
+  status = 200
