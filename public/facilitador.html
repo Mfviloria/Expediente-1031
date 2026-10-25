@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Panel del facilitador · Expediente 1031</title>
+<style>
+:root{--bg:#120B1C;--surface:#1C1229;--sunken:#271A39;--ink:#EFE8F7;--muted:#A99BC0;--line:#3A2A52;--accent:#FF8A1F;--accent-ink:#1A0F00;--good:#7CE08A;--bad:#FF6B6B;--violet:#A78BFA;color-scheme:dark}
+@media (prefers-color-scheme:light){:root{--bg:#EEE9F6;--surface:#FBF9FE;--sunken:#E2DAF0;--ink:#1E1530;--muted:#5F5575;--line:#CFC4E2;--accent:#B8400A;--accent-ink:#fff;--good:#1E7A4F;--bad:#B3372D;--violet:#6D4BC4;color-scheme:light}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;padding:0 max(16px,env(safe-area-inset-right)) 40px max(16px,env(safe-area-inset-left))}
+.wrap{max-width:1100px;margin:0 auto}
+h1{font-size:1.5rem;margin:24px 0 4px}
+.sub,.note{color:var(--muted);margin:0 0 14px;font-size:.92rem}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px}
+input{font:inherit;padding:.6rem .75rem;border-radius:6px;border:1px solid var(--line);background:var(--sunken);color:var(--ink);width:100%}
+.btn{font-weight:600;font-size:.9rem;font-family:inherit;padding:.55rem .9rem;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#login{max-width:380px;margin:60px auto}
+#login .btn{width:100%;margin-top:10px}
+.err{color:var(--bad);min-height:1.3em;margin:8px 0 0;font-size:.9rem}
+.top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.seg{display:flex;gap:6px}
+.seg .btn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;white-space:nowrap}
+th{font:600 .72rem ui-monospace,monospace;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+td.name{font-weight:600;white-space:normal;min-width:140px}
+.st{display:inline-block;padding:.1rem .55rem;border-radius:999px;font-size:.78rem;font-weight:600;border:1px solid var(--line)}
+.st.solved{color:var(--good);border-color:var(--good)}.st.gaveup{color:var(--bad);border-color:var(--bad)}.st.playing{color:var(--violet);border-color:var(--violet)}
+.chips{display:flex;gap:3px}
+.chip{width:22px;height:22px;border-radius:5px;border:1px solid var(--line);display:grid;place-items:center;font:600 .72rem ui-monospace,monospace;color:var(--muted);cursor:help}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.small{display:block;color:var(--muted);font-size:.78rem;margin-top:3px;white-space:normal}
+.stale{opacity:.55}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <form class="card" id="login" novalidate>
+    <h1 style="margin-top:0">Panel del facilitador</h1>
+    <p class="sub">Expediente 1031 · Escribe la contraseña para ver el avance de los aquelarres.</p>
+    <label for="pw" style="position:absolute;left:-9999px">Contraseña</label>
+    <input id="pw" type="password" autocomplete="current-password" placeholder="Contraseña del facilitador">
+    <p class="err" id="login-err" role="alert"></p>
+    <button class="btn" type="submit">Entrar</button>
+  </form>
+
+  <section id="panel" hidden>
+    <h1>Panel del facilitador</h1>
+    <p class="sub">Se actualiza solo cada 2 segundos. Pasa el cursor sobre un cuadro numerado para ver qué pista abrió el equipo.</p>
+    <div class="card">
+      <div class="top">
+        <p class="note" id="summary" style="margin:0">Esperando equipos.</p>
+        <div class="seg" role="group" aria-label="Orden">
+          <button class="btn ghost" type="button" data-mode="puntos" aria-pressed="true">Por puntos</button>
+          <button class="btn ghost" type="button" data-mode="llegada" aria-pressed="false">Por llegada</button>
+        </div>
+      </div>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>Pos.</th><th>Aquelarre</th><th>Estado</th><th>Pistas abiertas</th><th class="num">Ayudas</th><th class="num">Fallos</th><th class="num">Puntos</th><th class="num">Tiempo</th><th class="num">Última señal</th></tr></thead>
+          <tbody id="body"></tbody>
+        </table>
+      </div>
+      <p class="note" id="empty">Aún no hay equipos. Aparecen cuando escriben su nombre.</p>
+      <div class="top" style="margin:12px 0 0">
+        <button class="btn ghost" type="button" id="clear">Limpiar tablero</button>
+        <button class="btn ghost" type="button" id="logout">Salir</button>
+      </div>
+    </div>
+  </section>
+</div>
+<script>
+(function () {
+  var TITLES = {1:'El pulso del doctor: reloj inteligente e informe forense',2:'El lector de la Cripta de Servidores',3:'Wi-Fi: dónde flotaba cada dispositivo',4:'Portería y parqueadero',5:'El chat embrujado del equipo',6:'El grimorio del modelo: repositorio y MLflow',7:'Coartadas verificables',8:'Declaraciones de los sospechosos'};
+  var NAMES = {valeria:'Valeria',mateo:'Mateo',camila:'Camila',julian:'Julián',sofia:'Sofía'};
+  var rows = [], mode = 'puntos', timer = null;
+  function $(id) { return document.getElementById(id); }
+  function fmt(ms) { var s = Math.max(0, Math.floor(ms / 1000)), m = Math.floor(s / 60); return (m < 10 ? '0' : '') + m + ':' + (s % 60 < 10 ? '0' : '') + (s % 60); }
+  function td(tr, text, cls) { var c = document.createElement('td'); if (cls) c.className = cls; c.textContent = text; tr.appendChild(c); return c; }
+
+  function show(on) { $('login').hidden = on; $('panel').hidden = !on; }
+  function poll() {
+    fetch('/api/board', { cache: 'no-store' }).then(function (r) {
+      if (r.status === 401) { clearInterval(timer); timer = null; show(false); return null; }
+      return r.json();
+    }).then(function (j) { if (j) { rows = j.rows || []; render(); } }).catch(function () {});
+  }
+  function start() { show(true); poll(); if (!timer) timer = setInterval(poll, 2000); }
+
+  function render() {
+    var now = Date.now();
+    var done = rows.filter(function (r) { return r.status !== 'playing'; });
+    var play = rows.filter(function (r) { return r.status === 'playing'; });
+    function giveUpLast(a, b) { return (a.status === 'gaveup' ? 1 : 0) - (b.status === 'gaveup' ? 1 : 0); }
+    done.sort(mode === 'llegada' ? function (a, b) { return giveUpLast(a, b) || (a.end - b.end); }
+      : function (a, b) { return giveUpLast(a, b) || (b.pts - a.pts) || (a.timeMs - b.timeMs); });
+    play.sort(function (a, b) { return (b.clues - a.clues) || ((a.start || 0) - (b.start || 0)); });
+    var body = $('body'); body.textContent = '';
+    done.concat(play).forEach(function (r, i) {
+      var fin = r.status !== 'playing', tr = document.createElement('tr');
+      if (now - r.updated > 120000 && !fin) tr.className = 'stale';
+      td(tr, fin ? String(i + 1) : '—');
+      var n = td(tr, r.team || 'Sin nombre', 'name');
+      var extra = [];
+      if (r.out && r.out.length) extra.push('Descartó: ' + r.out.map(function (x) { return NAMES[x] || x; }).join(', '));
+      if (fin && r.culprit) extra.push('Acusó a ' + (NAMES[r.culprit] || r.culprit) + (r.motiveOk ? ' · motivo ✓' : ' · motivo ✗') + (r.methodOk ? ' · método ✓' : ' · método ✗'));
+      if (extra.length) { var s = document.createElement('span'); s.className = 'small'; s.textContent = extra.join(' — '); n.appendChild(s); }
+      var c = document.createElement('td'), st = document.createElement('span');
+      st.className = 'st ' + r.status; st.textContent = r.status === 'solved' ? 'Resuelto' : (r.status === 'gaveup' ? 'Se rindió' : 'Investigando');
+      c.appendChild(st); tr.appendChild(c);
+      var cc = document.createElement('td'), box = document.createElement('div'); box.className = 'chips';
+      for (var k = 1; k <= 8; k++) {
+        var ch = document.createElement('span'), on = (r.opened || []).indexOf(k) !== -1;
+        ch.className = 'chip' + (on ? ' on' : ''); ch.textContent = String(k);
+        ch.title = 'Pista ' + k + ': ' + TITLES[k] + (on ? ' (abierta)' : ' (sin abrir)');
+        box.appendChild(ch);
+      }
+      cc.appendChild(box); tr.appendChild(cc);
+      td(tr, String(r.hints), 'num'); td(tr, String(r.wrong), 'num');
+      td(tr, fin ? String(r.pts) : '—', 'num');
+      var t = td(tr, fin ? fmt(r.timeMs) : (r.start ? fmt(now - r.start) : '—'), 'num');
+      if (!fin && r.start) t.setAttribute('data-start', String(r.start));
+      td(tr, 'hace ' + Math.max(0, Math.round((now - r.updated) / 1000)) + ' s', 'num');
+      body.appendChild(tr);
+    });
+    var solved = done.filter(function (r) { return r.status === 'solved'; }).sort(function (a, b) { return a.end - b.end; });
+    var txt = 'Aquelarres: ' + rows.length + ' · Investigando: ' + play.length + ' · Resolvieron: ' + solved.length + ' · Se rindieron: ' + (done.length - solved.length);
+    if (solved.length) txt += ' · Primero en terminar: ' + (solved[0].team || 'Sin nombre') + ' (' + fmt(solved[0].timeMs) + ')';
+    $('summary').textContent = txt;
+    $('empty').hidden = rows.length > 0;
+  }
+  setInterval(function () {
+    var cells = document.querySelectorAll('#body [data-start]');
+    for (var i = 0; i < cells.length; i++) cells[i].textContent = fmt(Date.now() - Number(cells[i].getAttribute('data-start')));
+  }, 1000);
+
+  $('login').addEventListener('submit', function (e) {
+    e.preventDefault();
+    fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: $('pw').value }) })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (x) { if (x.ok) { $('pw').value = ''; $('login-err').textContent = ''; start(); } else { $('login-err').textContent = x.j.error || 'No se pudo entrar.'; } })
+      .catch(function () { $('login-err').textContent = 'No hay conexión con el servidor.'; });
+  });
+  document.querySelector('.seg').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-mode]'); if (!b) return;
+    mode = b.getAttribute('data-mode');
+    var all = document.querySelectorAll('.seg .btn');
+    for (var i = 0; i < all.length; i++) all[i].setAttribute('aria-pressed', String(all[i] === b));
+    render();
+  });
+  var armed = false, at = null;
+  $('clear').addEventListener('click', function () {
+    var b = $('clear');
+    if (!armed) { armed = true; b.textContent = 'Pulsa de nuevo para borrar el tablero'; at = setTimeout(function () { armed = false; b.textContent = 'Limpiar tablero'; }, 4000); return; }
+    clearTimeout(at); armed = false; b.textContent = 'Limpiar tablero';
+    fetch('/api/board', { method: 'DELETE' }).then(poll);
+  });
+  $('logout').addEventListener('click', function () {
+    fetch('/api/logout', { method: 'POST' }).then(function () { clearInterval(timer); timer = null; show(false); });
+  });
+  fetch('/api/board').then(function (r) { if (r.ok) start(); }).catch(function () {}); // si ya hay sesión, entra directo
+})();
+</script>
+</body>
+</html>

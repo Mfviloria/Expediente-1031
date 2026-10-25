@@ -1,0 +1,1168 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>¿Quién asesinó al Data Scientist?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Creepster&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+/* Layout: expediente en una columna (máx. 980px) con una portada de dos columnas (texto + gráfico de dispersión con luna y murciélagos).
+   Look: noche violeta, calabaza como acento, violeta para datos; Creepster solo en el título, Special Elite en los encabezados. */
+:root {
+  --bg: #120B1C;
+  --surface: #1C1229;
+  --sunken: #271A39;
+  --ink: #EFE8F7;
+  --muted: #A99BC0;
+  --line: #3A2A52;
+  --accent: #FF8A1F;
+  --accent-ink: #1A0F00;
+  --violet: #A78BFA;
+  --mark: #5A3A00;
+  --mark-ink: #FFD98A;
+  --good: #7CE08A;
+  --bad: #FF6B6B;
+  --moon: #F2E6C9;
+  --glow: rgba(155, 109, 255, .20);
+  --display: 'Special Elite', 'Courier New', monospace;
+  --creep: 'Creepster', 'Special Elite', 'Courier New', monospace;
+  --body: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #EEE9F6;
+    --surface: #FBF9FE;
+    --sunken: #E2DAF0;
+    --ink: #1E1530;
+    --muted: #5F5575;
+    --line: #CFC4E2;
+    --accent: #B8400A;
+    --accent-ink: #FFFFFF;
+    --violet: #6D4BC4;
+    --mark: #FFD9A0;
+    --mark-ink: #5A2E00;
+    --good: #1E7A4F;
+    --bad: #B3372D;
+    --moon: #F5A85B;
+    --glow: rgba(255, 138, 31, .16);
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #EEE9F6;
+  --surface: #FBF9FE;
+  --sunken: #E2DAF0;
+  --ink: #1E1530;
+  --muted: #5F5575;
+  --line: #CFC4E2;
+  --accent: #B8400A;
+  --accent-ink: #FFFFFF;
+  --violet: #6D4BC4;
+  --mark: #FFD9A0;
+  --mark-ink: #5A2E00;
+  --good: #1E7A4F;
+  --bad: #B3372D;
+  --moon: #F5A85B;
+  --glow: rgba(255, 138, 31, .16);
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body {
+  background-color: var(--bg);
+  background-image: radial-gradient(60rem 28rem at 85% -8%, var(--glow), transparent 70%);
+  background-repeat: no-repeat;
+  color: var(--ink);
+  font: 400 16px/1.55 var(--body);
+  margin: 0;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px);
+  background: var(--surface);
+  z-index: 10;
+}
+.wrap {
+  max-width: 980px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Barra de estado */
+.status {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 9;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.status-in { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; padding-block: 10px; }
+.status input { flex: 1 1 200px; min-width: 0; }
+.stat { display: flex; flex-direction: column; line-height: 1.15; }
+.stat .k { font: 500 .66rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.stat .v { font: 500 1.05rem var(--mono); font-variant-numeric: tabular-nums; }
+.stat .v.orange { color: var(--accent); }
+
+/* Portada */
+.hero { padding-block: 34px 8px; }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 24px; align-items: center; }
+.eyebrow { font: 500 .74rem var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0; }
+h1 { font: 400 clamp(2.4rem, 7vw, 4.2rem)/1.02 var(--creep); letter-spacing: .02em; margin: .5rem 0 1rem; text-wrap: balance; }
+h1 .acc { color: var(--accent); }
+.stamp {
+  display: inline-block;
+  transform: rotate(-3deg);
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  font: 500 .78rem var(--mono);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  padding: .15rem .6rem;
+  border-radius: 3px;
+  margin-bottom: 14px;
+}
+.lead { max-width: 62ch; font-size: 1.05rem; margin: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 18px 0 0; }
+.chips li { font: 500 .76rem var(--mono); padding: .25rem .65rem; background: var(--sunken); border: 1px solid var(--line); border-radius: 999px; }
+.art { margin: 0; min-width: 0; }
+.art svg { display: block; width: 100%; height: auto; max-width: 100%; }
+.art .moon { fill: var(--moon); }
+.art .crater { fill: var(--bg); opacity: .22; }
+.art .axis { stroke: var(--line); stroke-width: 1.5; fill: none; }
+.art .trend { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 5 5; fill: none; }
+.art .dot { fill: var(--violet); }
+.art .spike { fill: var(--accent); }
+.art .ring { fill: none; stroke: var(--accent); stroke-width: 1.5; opacity: .6; }
+.art .bat { fill: var(--violet); }
+.art text { font: 500 10.5px var(--mono); fill: var(--muted); }
+.art text.hot { fill: var(--accent); }
+@media (prefers-reduced-motion: no-preference) {
+  .art .fly { animation: drift 6s ease-in-out infinite; }
+  .art .fly.f2 { animation-duration: 7.5s; animation-delay: -2s; }
+  .art .fly.f3 { animation-duration: 5s; animation-delay: -3s; }
+  @keyframes drift { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-7px, -6px); } }
+}
+
+section { padding-block: 34px 6px; }
+h2 { font: 400 1.7rem/1.15 var(--display); margin: 0 0 .35rem; text-wrap: balance; }
+.sub { color: var(--muted); max-width: 66ch; margin: 0 0 18px; }
+h3 { margin: 0; }
+
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.rule, .card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; }
+.rule h3 { font: 600 1rem var(--body); margin: 0 0 4px; }
+.rule p { margin: 0; color: var(--muted); font-size: .92rem; }
+
+.facts { display: grid; grid-template-columns: minmax(110px, max-content) 1fr; gap: 6px 18px; margin: 0; }
+.facts dt { color: var(--muted); font-size: .9rem; }
+.facts dd { margin: 0; min-width: 0; }
+
+/* Sospechosos */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.suspect { display: flex; flex-direction: column; gap: 12px; }
+.suspect h3 { font: 400 1.3rem/1.2 var(--display); }
+.role { color: var(--muted); font-size: .9rem; margin: 0; }
+.suspect.out { opacity: .55; }
+.suspect.out h3 { text-decoration: line-through; }
+.tag { font: 500 .76rem var(--mono); padding: .05rem .45rem; border-radius: 3px; background: var(--sunken); }
+.tag.yes { background: var(--mark); color: var(--mark-ink); }
+
+input[type="text"], textarea, select {
+  width: 100%;
+  font: inherit;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 8px 10px;
+}
+textarea { resize: vertical; }
+.btn {
+  font: 500 .9rem var(--body);
+  padding: .55rem .95rem;
+  border-radius: 5px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn.small { padding: .35rem .7rem; font-size: .82rem; align-self: flex-start; }
+
+/* Pistas */
+.clues { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; align-items: start; }
+.clue { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; min-width: 0; }
+.clue.locked { border-style: dashed; background: transparent; }
+.clue.open { grid-column: 1 / -1; border-color: var(--violet); }
+.clue-head {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  color: inherit;
+  border: 0;
+  padding: 14px 16px;
+  font: inherit;
+  cursor: pointer;
+}
+.tab {
+  justify-self: start;
+  font: 500 .68rem var(--mono);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  background: var(--accent);
+  color: var(--accent-ink);
+  padding: .1rem .5rem;
+  border-radius: 3px;
+}
+.clue.locked .tab { background: var(--sunken); color: var(--muted); }
+.clue-title { font-weight: 600; }
+.clue-var { justify-self: start; font: 400 .8rem var(--mono); color: var(--muted); }
+.clue.open .clue-var { color: var(--mark-ink); background: var(--mark); padding: .05rem .45rem; border-radius: 3px; }
+.clue-body { padding: 2px 16px 18px; border-top: 1px solid var(--line); }
+.clue-body h4 { font: 500 .74rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 18px 0 8px; }
+.clue-body h4:first-child { margin-top: 14px; }
+.note { font-size: .92rem; color: var(--muted); margin: 10px 0 0; }
+mark { background: var(--mark); color: var(--mark-ink); padding: 0 .25em; border-radius: 2px; }
+
+.tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: 5px; }
+table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+th { text-align: left; font: 500 .68rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); background: var(--sunken); padding: 8px 10px; }
+td { padding: 7px 10px; border-top: 1px solid var(--line); vertical-align: top; }
+.t { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.bars { display: grid; gap: 6px; }
+.bar-row { display: grid; grid-template-columns: 6.8rem 1fr 4.2rem; gap: 10px; align-items: center; font: 400 .84rem var(--mono); font-variant-numeric: tabular-nums; }
+.track { height: 12px; background: var(--sunken); border-radius: 2px; overflow: hidden; }
+.fill { height: 100%; background: var(--violet); }
+.fill.hot { background: var(--accent); }
+.bar-row .val { text-align: right; }
+
+.chat { display: grid; gap: 9px; }
+.msg { display: grid; grid-template-columns: 3.4rem 1fr; gap: 10px; font-size: .92rem; }
+.msg .t { color: var(--muted); font-size: .8rem; padding-top: 2px; }
+.msg .to { color: var(--muted); }
+
+.quote { margin: 0 0 12px; padding: 4px 0 4px 12px; border-left: 3px solid var(--line); }
+.quote cite { display: block; font: 500 .74rem var(--mono); font-style: normal; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 2px; }
+
+.help { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; margin-top: 18px; }
+.help ul { margin: 0; padding-left: 1.1rem; flex: 1 1 260px; min-width: 0; font-size: .92rem; }
+
+/* Matriz */
+.matrix th, .matrix td { text-align: center; }
+.matrix thead th { white-space: normal; vertical-align: bottom; }
+.matrix thead th:first-child, .matrix tbody th { text-align: left; }
+.matrix tbody th { font: 600 .92rem var(--body); letter-spacing: 0; text-transform: none; color: var(--ink); background: transparent; border-top: 1px solid var(--line); white-space: nowrap; }
+.cell { min-width: 3.4rem; padding: .3rem .5rem; font: 500 .8rem var(--mono); border-radius: 4px; border: 1px solid var(--line); background: var(--bg); color: var(--muted); cursor: pointer; }
+.cell[data-s="1"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.cell[data-s="2"] { background: var(--sunken); color: var(--ink); text-decoration: line-through; }
+
+/* Acusación */
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.field { display: grid; gap: 6px; margin-bottom: 18px; }
+.lbl, legend { font-weight: 600; font-size: .92rem; padding: 0; margin-bottom: 6px; }
+.pick { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 8px; }
+.pick label { display: flex; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); cursor: pointer; }
+.pick input { accent-color: var(--accent); margin: 0; }
+.pick label:has(input:checked) { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.row { display: flex; flex-wrap: wrap; gap: 10px; }
+.msg-line { min-height: 1.5em; font-size: .92rem; margin: 12px 0 0; }
+.bad { color: var(--bad); }
+.good { color: var(--good); }
+
+.result { margin-top: 22px; border: 1px solid var(--violet); border-radius: 8px; background: var(--surface); padding: 20px; display: grid; gap: 14px; }
+.score { font: 400 3.4rem/1 var(--creep); color: var(--accent); letter-spacing: .02em; }
+.score small { font: 400 1.1rem var(--mono); color: var(--muted); letter-spacing: 0; }
+.result h4 { font: 500 .74rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 6px 0 0; }
+.result ol, .result ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 6px; }
+.result .why { white-space: pre-wrap; margin: 0; padding: 10px 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 5px; font-size: .92rem; }
+
+/* Panel del facilitador */
+.board-top { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.board-top .note { margin: 0; flex: 1 1 260px; min-width: 0; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg-b { font: 500 .82rem var(--body); padding: .4rem .85rem; background: var(--bg); color: var(--ink); border: 0; cursor: pointer; }
+.seg-b[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.board table { font-size: .9rem; }
+.board th.num, .board td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.board td { white-space: nowrap; vertical-align: middle; }
+.board td.name { white-space: normal; min-width: 8rem; font-weight: 600; }
+.pos { display: inline-block; min-width: 1.8rem; text-align: center; font: 500 .8rem var(--mono); padding: .05rem .4rem; border-radius: 3px; background: var(--sunken); }
+.pos.first { background: var(--accent); color: var(--accent-ink); }
+.st { font: 500 .74rem var(--mono); padding: .05rem .55rem; border-radius: 999px; background: var(--sunken); }
+.st.solved { background: var(--mark); color: var(--mark-ink); }
+.st.gaveup { color: var(--muted); }
+.board .row { margin-top: 14px; }
+.sync { display: block; margin-top: 8px; }
+
+footer { padding-block: 34px 56px; color: var(--muted); font-size: .88rem; }
+footer .row { align-items: center; }
+
+@media (max-width: 760px) {
+  .hero-grid { grid-template-columns: minmax(0, 1fr); }
+  .art { max-width: 440px; }
+}
+@media (max-width: 520px) {
+  .bar-row { grid-template-columns: 5.6rem 1fr 3.6rem; gap: 8px; }
+  .facts { grid-template-columns: 1fr; gap: 0; }
+  .facts dd { margin-bottom: 8px; }
+}
+
+/* Ventana de bienvenida: nombre del aquelarre */
+[hidden]{display:none!important}
+.gate{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(10,6,16,.88);backdrop-filter:blur(4px)}
+.gate-card{width:100%;max-width:440px;background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:10px;padding:26px 24px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.gate-card h2{font:400 1.5rem/1.2 var(--display);margin:.2rem 0 .6rem}
+.gate-card p{margin:0 0 14px;color:var(--muted)}
+.gate-card input{width:100%;font:500 1rem var(--body);padding:.7rem .8rem;border-radius:6px;border:1px solid var(--line);background:var(--sunken);color:var(--ink)}
+.gate-card .btn{width:100%;margin-top:12px;padding:.75rem 1rem;font-size:1rem}
+.gate-msg{min-height:1.2em;margin:8px 0 0;font-size:.9rem;color:var(--bad)}
+</style>
+
+
+</head><body>
+<div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gate-t" hidden>
+  <form class="gate-card" id="gate-form" novalidate>
+    <span class="stamp">Caso maldito</span>
+    <h2 id="gate-t">Bienvenidos al expediente 1031</h2>
+    <p>Antes de abrir las pistas, escriban el nombre de su aquelarre (equipo).</p>
+    <label class="sr" for="gate-team">Nombre del aquelarre (equipo)</label>
+    <input id="gate-team" type="text" maxlength="40" autocomplete="off" placeholder="Nombre de tu aquelarre (equipo)">
+    <p class="gate-msg" id="gate-msg" role="alert"></p>
+    <button class="btn" type="submit">Entrar al caso</button>
+  </form>
+</div>
+
+<div class="status" id="status">
+  <div class="wrap">
+    <div class="status-in">
+      <label class="sr" for="team">Nombre del aquelarre (equipo)</label>
+      <input id="team" type="text" placeholder="Nombre de tu aquelarre (equipo)" maxlength="40" autocomplete="off">
+      <div class="stat"><span class="k">Tiempo</span><span class="v" id="timer">00:00</span></div>
+      <div class="stat"><span class="k">Pistas</span><span class="v" id="st-clues">0/8</span></div>
+      <div class="stat"><span class="k">Puntos posibles</span><span class="v orange" id="st-pts">100</span></div>
+      <span id="sync-top" style="flex-basis:100%;font:500 .72rem var(--mono);color:var(--muted)"></span>
+    </div>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="stamp">Caso maldito</span>
+      <p class="eyebrow">Expediente 1031 · Aurora Analytics · Noche de Brujas de Datos</p>
+      <h1>¿Quién asesinó al <span class="acc">Data Scientist</span>?</h1>
+      <p class="lead">Era la Noche de Brujas de Datos en Aurora Analytics. Entre disfraces, telarañas y calabazas, el Dr. Andrés Quintero apareció sin vida en la Cripta de Servidores. Los fantasmas no hablan, pero los datos sí: registros de acceso, horarios, mensajes y rastros sospechosos. Analícenlos, descarten sospechosos y descubran quién es el culpable.</p>
+      <ul class="chips">
+        <li>Análisis de datos</li><li>Patrones</li><li>Correlación</li><li>Deducción</li>
+      </ul>
+    </div>
+    <figure class="art" aria-hidden="true">
+      <svg viewBox="0 0 360 280" xmlns="http://www.w3.org/2000/svg" focusable="false">
+        <defs>
+          <path id="bat" d="M0 -2 C-4 -9 -12 -10 -22 -4 C-16 -4 -13 0 -12 5 C-9 1 -5 1 -2 6 L0 3 L2 6 C5 1 9 1 12 5 C13 0 16 -4 22 -4 C12 -10 4 -9 0 -2 Z"/>
+        </defs>
+        <circle class="moon" cx="270" cy="66" r="46"/>
+        <circle class="crater" cx="254" cy="54" r="8"/>
+        <circle class="crater" cx="286" cy="80" r="6"/>
+        <circle class="crater" cx="262" cy="86" r="4"/>
+        <g class="fly"><use href="#bat" class="bat" transform="translate(205 44) scale(1.05)"/></g>
+        <g class="fly f2"><use href="#bat" class="bat" transform="translate(170 78) scale(.7)"/></g>
+        <g class="fly f3"><use href="#bat" class="bat" transform="translate(330 120) scale(.8)"/></g>
+        <path class="axis" d="M40 244 H344 M40 244 V128"/>
+        <path class="trend" d="M44 234 L334 150"/>
+        <circle class="dot" cx="62" cy="228" r="4"/>
+        <circle class="dot" cx="82" cy="216" r="4"/>
+        <circle class="dot" cx="98" cy="222" r="4"/>
+        <circle class="dot" cx="114" cy="208" r="4"/>
+        <circle class="dot" cx="134" cy="203" r="4"/>
+        <circle class="dot" cx="148" cy="212" r="4"/>
+        <circle class="dot" cx="166" cy="196" r="4"/>
+        <circle class="dot" cx="212" cy="188" r="4"/>
+        <circle class="dot" cx="230" cy="176" r="4"/>
+        <circle class="dot" cx="248" cy="170" r="4"/>
+        <circle class="dot" cx="266" cy="174" r="4"/>
+        <circle class="dot" cx="284" cy="160" r="4"/>
+        <circle class="dot" cx="304" cy="158" r="4"/>
+        <circle class="dot" cx="324" cy="150" r="4"/>
+        <circle class="ring" cx="190" cy="140" r="14"/>
+        <circle class="spike" cx="190" cy="140" r="7"/>
+        <text class="hot" x="208" y="136">156 bpm</text>
+        <text x="206" y="150">outlier</text>
+        <text x="40" y="262">21:00</text>
+        <text x="172" y="262">21:30</text>
+        <text x="306" y="262">22:00</text>
+        <text x="44" y="122">bpm</text>
+      </svg>
+    </figure>
+  </div>
+</header>
+
+<main class="wrap" id="main">
+  <section aria-labelledby="h-reglas">
+    <h2 id="h-reglas">Cómo se juega</h2>
+    <p class="sub">Un expediente por aquelarre. El reloj arranca cuando abren la primera pista.</p>
+    <div class="rules">
+      <div class="rule"><h3>Aquelarres de 3 a 5 personas</h3><p>Repartan las fuentes entre ustedes y crucen lo que encuentre cada quien antes de acusar.</p></div>
+      <div class="rule"><h3>Cada pista aporta una variable</h3><p>Son ocho fuentes de datos. No hace falta abrirlas todas: a partir de la sexta, cada una resta 4 puntos.</p></div>
+      <div class="rule"><h3>Gana quien resuelva y justifique</h3><p>Se puntúan culpable, motivo y método. Cada acusación fallida resta 15 puntos y cada ayuda 10. En empate gana el menor tiempo.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-noche">
+    <h2 id="h-noche">La noche del crimen</h2>
+    <p class="sub">Estos hechos no están en discusión.</p>
+    <div class="card">
+      <dl class="facts">
+        <dt>Víctima</dt><dd>Dr. Andrés Quintero, Data Scientist líder, 41 años. Esa noche iba disfrazado de científico loco.</dd>
+        <dt>Edificio</dt><dd>Aurora Analytics, cuatro pisos. La Cripta de Servidores está en el piso 4 y tiene lector de tarjetas.</dd>
+        <dt>Evento</dt><dd>Noche de Brujas de Datos, fiesta de disfraces del equipo de datos, de 18:30 a 20:30. Después, parte del equipo se quedó trabajando.</dd>
+        <dt>Hallazgo</dt><dd>A las 22:30, Sofía Mejía encuentra a Andrés sin vida dentro de la Cripta de Servidores.</dd>
+        <dt>Seguridad</dt><dd>La portería peatonal y la puerta de la cripta registran tarjetas. El ascensor del parqueadero P2 llega al piso 4 y no tiene lector.</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-sosp">
+    <h2 id="h-sosp">Sospechosos</h2>
+    <p class="sub">Cinco personas disfrazadas seguían en el edificio. Anoten lo que sepan y descarten a quien la evidencia deje fuera.</p>
+    <div class="grid" id="suspects"></div>
+  </section>
+
+  <section aria-labelledby="h-pistas">
+    <h2 id="h-pistas">Pistas</h2>
+    <p class="sub">Abran una pista para ver su fuente de datos. Ninguna lo dice todo por sí sola.</p>
+    <div class="clues" id="clues"></div>
+    <div class="help">
+      <button class="btn" type="button" id="hint-btn">Invocar una ayuda (−10 pts)</button>
+      <ul id="hints"></ul>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-matriz">
+    <h2 id="h-matriz">Matriz de deducción</h2>
+    <p class="sub">Marquen cada casilla con Sí o No a medida que la evidencia lo confirme. Es una herramienta del aquelarre y no suma puntos.</p>
+    <div class="tbl matrix">
+      <table>
+        <thead>
+          <tr>
+            <th>Sospechoso</th>
+            <th>Tenía acceso a la cripta</th>
+            <th>Cerca de la cripta a las 21:32</th>
+            <th>Coartada verificable</th>
+            <th>Motivo fuerte</th>
+          </tr>
+        </thead>
+        <tbody id="matrix-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-acusar">
+    <h2 id="h-acusar">Acusación</h2>
+    <p class="sub">Elijan culpable, motivo y método, y expliquen cómo llegaron a esa conclusión. Una justificación sin evidencia no se presenta.</p>
+    <form id="accuse-form" class="card" novalidate>
+      <fieldset id="lock">
+        <fieldset class="field">
+          <legend>¿Quién lo hizo?</legend>
+          <div class="pick" id="pick-culprit"></div>
+        </fieldset>
+        <div class="field">
+          <label class="lbl" for="motive">Motivo</label>
+          <select id="motive">
+            <option value="">Elijan un motivo</option>
+            <option value="m2">Venganza por un ascenso negado</option>
+            <option value="m1">Evitar que se supiera que manipuló las métricas de un modelo</option>
+            <option value="m6">Evitar una escalada a Dirección por una falla puntual en los backups</option>
+            <option value="m5">Ocultar que falsificaba el estado de los backups, que llevaban semanas sin respaldar nada</option>
+            <option value="m4">Quedarse con el crédito de un dashboard</option>
+            <option value="m3">Ocultar el robo de una base de datos de clientes</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="lbl" for="method">Método</label>
+          <select id="method">
+            <option value="">Elijan un método</option>
+            <option value="t2">Entró con su propia tarjeta y borró el registro</option>
+            <option value="t3">Forzó la cerradura electrónica con un ataque informático</option>
+            <option value="t1">Subió por el ascensor del parqueadero, tomó la tarjeta de Valeria y entró</option>
+            <option value="t5">Tomó la tarjeta de Valeria desde la oficina abierta y dejó un script que simulaba su presencia en el puesto</option>
+            <option value="t4">Ya estaba escondido dentro de la cripta desde antes</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="lbl" for="why">Justificación del aquelarre</label>
+          <textarea id="why" rows="5" placeholder="Citen al menos tres evidencias y expliquen cómo las cruzaron."></textarea>
+          <span class="note" id="why-count">0 de 60 caracteres mínimos</span>
+        </div>
+        <div class="row">
+          <button class="btn primary" type="submit" id="submit-accuse">Presentar acusación</button>
+          <button class="btn" type="button" id="giveup">Rendirme y ver la solución</button>
+        </div>
+        <p class="msg-line" id="accuse-msg" aria-live="polite"></p>
+      </fieldset>
+    </form>
+    <div id="result" aria-live="polite"></div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="row">
+      <button class="btn small" type="button" id="reset">Reiniciar caso</button>
+      <span>Caso ficticio. Cualquier parecido con personas reales es coincidencia.</span>
+    </div>
+    <span class="sync" id="sync-state"></span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var KEY = 'aurora-1031-v1';
+  var TOTAL = 8;
+  function $(id) { return document.getElementById(id); }
+
+  /* ---------- Datos del caso ---------- */
+  var SUS = [
+    { id: 'valeria', name: 'Valeria Ortega', role: 'Ingeniera de Datos', access: true, car: 'Sin vehículo (llega en bus)', wear: 'Bruja: sombrero y capa verde' },
+    { id: 'mateo', name: 'Mateo Ríos', role: 'Ingeniero de Machine Learning', access: false, car: 'Mazda gris · KLM-482', wear: 'La Parca: túnica gris con capucha' },
+    { id: 'camila', name: 'Camila Duarte', role: 'Analista de BI', access: false, car: 'Renault rojo · PQR-903', wear: 'Vampira: capa roja de cuello alto' },
+    { id: 'julian', name: 'Julián Peña', role: 'Product Manager', access: false, car: 'Camioneta negra · TXD-657', wear: 'Frankenstein: traje oscuro' },
+    { id: 'sofia', name: 'Sofía Mejía', role: 'Administradora de Bases de Datos', access: true, car: 'Moto · ZRA-31K', wear: 'Calabaza: chaleco naranja' }
+  ];
+  var CRIT = ['Tenía acceso a la cripta', 'Cerca de la cripta a las 21:32', 'Coartada verificable', 'Motivo fuerte'];
+  var LAB = ['—', 'Sí', 'No'];
+  var HINTS = [
+    'Hay dos personas que parecen culpables y ninguna lo es. Una tarjeta usada y un disfraz sospechoso son pistas, no pruebas.',
+    'Pregunten quién pudo tomar la tarjeta del puesto de Valeria sin dejar rastro, y qué dato demuestra que una coartada es una máquina y no una persona.'
+  ];
+  var WRONG = {
+    valeria: 'Su tarjeta estuvo en la cripta, pero ella estaba pagando en la cafetería. Tarjeta no es lo mismo que persona.',
+    mateo: 'Gran teoría, pero ¿por dónde pasó para llegar al puesto de Valeria y tomar la tarjeta? Revisen su recorrido por el Wi-Fi.',
+    julian: 'Estaba en una videollamada grabada con la cámara encendida. Los fantasmas no atienden clientes de Helios.',
+    camila: 'Se fue a las 20:52 y su carro salió a las 20:55. Ni los vampiros vuelven sin pasar por la barrera.'
+  };
+
+  function tb(head, rows) {
+    return '<div class="tbl"><table><thead><tr>' + head.map(function (h) { return '<th>' + h + '</th>'; }).join('') +
+      '</tr></thead><tbody>' + rows.map(function (r) {
+        return '<tr>' + r.map(function (c) { return '<td>' + c + '</td>'; }).join('') + '</tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+  function t(s) { return '<span class="t">' + s + '</span>'; }
+  function bars(rows, max) {
+    return '<div class="bars">' + rows.map(function (r) {
+      var v = r[1], isNum = typeof v === 'number';
+      var w = isNum ? Math.round(v / max * 100) : 0;
+      return '<div class="bar-row"><span>' + r[0] + '</span><div class="track"><div class="fill' + (r[2] ? ' hot' : '') +
+        '" style="width:' + w + '%"></div></div><span class="val">' + v + '</span></div>';
+    }).join('') + '</div>';
+  }
+  function chat(rows) {
+    return '<div class="chat">' + rows.map(function (r) {
+      return '<div class="msg">' + t(r[0]) + '<div><b>' + r[1] + '</b> <span class="to">a ' + r[2] + '</span><br>' + r[3] + '</div></div>';
+    }).join('') + '</div>';
+  }
+  function quote(who, text) {
+    return '<blockquote class="quote"><cite>' + who + '</cite>' + text + '</blockquote>';
+  }
+
+  var CLUES = [
+    {
+      n: 1, title: 'El pulso del doctor: reloj inteligente e informe forense', variable: 'Hora del crimen',
+      body: function () {
+        return '<h4>Pulsaciones por minuto del reloj de Andrés</h4>' +
+          bars([['21:00', 72], ['21:10', 74], ['21:20', 71], ['21:25', 76], ['21:29', 98, 1], ['21:30', 138, 1], ['21:31', 156, 1], ['21:32', 'sin señal']], 170) +
+          '<p class="note">Informe forense: hora estimada de muerte entre <mark>21:30 y 21:35</mark>. Causa: traumatismo contundente. El cuerpo no fue movido.</p>';
+      }
+    },
+    {
+      n: 2, title: 'El lector de la Cripta de Servidores', variable: 'Quién entró y salió',
+      body: function () {
+        return '<h4>Lector SRV-04 · Cripta de Servidores, piso 4</h4>' +
+          tb(['Hora', 'Tarjeta', 'Evento'], [
+            [t('21:05'), 'Andrés Quintero', 'Entrada'],
+            [t('21:08'), 'Sofía Mejía', 'Entrada'],
+            [t('21:18'), 'Sofía Mejía', 'Salida'],
+            [t('21:28'), 'Valeria Ortega', 'Entrada'],
+            [t('21:36'), 'Valeria Ortega', 'Salida'],
+            [t('22:29'), 'Sofía Mejía', 'Entrada']
+          ]) +
+          '<p class="note">El lector registra tarjetas, no personas. No hay cámara dentro de la cripta. Las tarjetas se dejan en el puesto de cada persona, en la oficina abierta.</p>';
+      }
+    },
+    {
+      n: 3, title: 'Wi-Fi: dónde flotaba cada dispositivo', variable: 'Ubicación de cada dispositivo',
+      body: function () {
+        return '<h4>Sesiones por punto de acceso</h4>' +
+          tb(['Dispositivo', 'Punto', 'Desde', 'Hasta'], [
+            ['Teléfono de Andrés', 'AP-4B', t('21:03'), t('21:32') + ' (desconexión)'],
+            ['Teléfono de Sofía', 'AP-4B', t('21:06'), t('21:19')],
+            ['Teléfono de Sofía', 'AP-4A', t('21:20'), t('22:27')],
+            ['Teléfono de Sofía', 'AP-4B', t('22:28'), t('22:40')],
+            ['Teléfono de Valeria', 'AP-4A', t('19:00'), t('21:19')],
+            ['Teléfono de Valeria', 'AP-2', t('21:22'), t('21:50')],
+            ['Teléfono de Mateo', 'AP-4A', t('19:00'), t('20:43')],
+            ['Teléfono de Mateo', 'AP-1', t('21:17'), t('21:19')],
+            ['Teléfono de Mateo', 'AP-4B', t('21:24'), t('21:39')],
+            ['Teléfono de Mateo', 'AP-1', t('21:43'), t('21:46')],
+            ['Portátil de Julián', 'AP-4A', t('20:00'), t('21:52')],
+            ['Teléfono de Camila', 'AP-4A', t('19:00'), t('20:49')],
+            ['Teléfono de Camila', 'AP-1', t('20:50'), t('20:55')]
+          ]) +
+          '<h4>Zonas</h4>' +
+          '<p class="note" style="margin-top:0">AP-1: recepción y parqueadero · AP-2: cafetería, piso 2 · AP-4A: oficina abierta y salas de reunión, piso 4 · AP-4B: pasillo y Cripta de Servidores, piso 4. Los puestos de trabajo (incluido el de Valeria) están en AP-4A. Desde el ascensor del parqueadero P2 se llega al pasillo AP-4B sin cruzar AP-4A. Un teléfono encendido deja sesión en cada zona que pisa.</p>';
+      }
+    },
+    {
+      n: 4, title: 'Portería y parqueadero', variable: 'Entradas y salidas del edificio',
+      body: function () {
+        return '<h4>Registro de accesos al edificio</h4>' +
+          tb(['Hora', 'Punto', 'Registro'], [
+            [t('20:44'), 'Portería peatonal', 'Salida · tarjeta de Mateo Ríos'],
+            [t('20:46'), 'Barrera del parqueadero P2', 'Salida · vehículo KLM-482'],
+            [t('20:52'), 'Portería peatonal', 'Salida · tarjeta de Camila Duarte'],
+            [t('20:55'), 'Barrera del parqueadero P2', 'Salida · vehículo PQR-903'],
+            [t('21:17'), 'Barrera del parqueadero P2', 'Entrada · vehículo KLM-482'],
+            [t('21:47'), 'Barrera del parqueadero P2', 'Salida · vehículo KLM-482'],
+            [t('22:30'), 'Portería peatonal', 'Entrada · vigilante, llamado por Sofía']
+          ]) +
+          '<p class="note">Entre las 20:52 y las 22:30 no hubo entradas por la portería peatonal.</p>';
+      }
+    },
+    {
+      n: 5, title: 'El chat embrujado del equipo', variable: 'Motivos y quién sabía qué',
+      body: function () {
+        return '<h4>Mensajes directos y canal #equipo-datos</h4>' + chat([
+          ['18:55', 'Andrés', '#equipo-datos', 'Gracias por la Noche de Brujas de Datos. El lunes presento los resultados al comité. Mi disfraz de científico loco es pura coincidencia.'],
+          ['19:40', 'Andrés', 'Mateo', 'Revisé tu notebook del modelo de churn. Ese AUC de 0.94 no sale con una partición limpia. Hay fuga de datos. El lunes lo reporto.'],
+          ['19:44', 'Mateo', 'Andrés', 'Dame hasta el lunes, por favor. Lo corrijo. Si esto sale a la luz, el cliente cancela el contrato.'],
+          ['19:51', 'Andrés', 'Valeria', 'Sobre tu ascenso: este trimestre no va a ser posible. Hablamos después.'],
+          ['19:58', 'Valeria', 'Andrés', 'Entendido. Me molesta, pero hoy no lo voy a discutir. Mi enojo y yo nos vamos a comer pastel de calabaza.'],
+          ['20:10', 'Julián', 'Andrés', 'Cancelaste mi roadmap sin consultarme. Esto no se queda así.'],
+          ['20:12', 'Andrés', 'Julián', 'Lo vemos el lunes, con datos.'],
+          ['20:20', 'Camila', 'Andrés', 'Ese dashboard lo hice yo y salió en tu presentación con tu nombre.'],
+          ['20:35', 'Sofía', 'Andrés', 'Los backups fallaron otra vez. Voy a revisarlos en la cripta de servidores después de las 9.'],
+          ['20:37', 'Andrés', 'Sofía', 'Hazlo hoy. Si falla una vez más, lo escalo a Dirección.'],
+          ['20:52', 'Andrés', 'Sofía', 'Acabo de mirar el almacenamiento real, no el panel. Hay cosas que no cuadran. Pásate por la cripta a las 9 y lo vemos juntos.'],
+          ['21:24', 'Valeria', 'Sofía', 'Bajo a la cafetería. Dejé mi tarjeta en mi puesto, vuelvo en un rato.'],
+          ['21:25', 'Sofía', 'Valeria', 'Dale, yo cuido tu puesto. No te traigas ningún fantasma.']
+        ]);
+      }
+    },
+    {
+      n: 6, title: 'El grimorio de los datos: modelo, repositorio y backups', variable: 'Resultados del modelo y estado real de los backups',
+      body: function () {
+        return '<h4>Commits de la tarde</h4>' +
+          tb(['Hora', 'Autor', 'Mensaje'], [
+            [t('17:20'), 'mateo.rios', 'entrenamiento churn v7'],
+            [t('20:31'), 'mateo.rios', 'reporte final AUC 0.94, listo para comité'],
+            [t('20:38'), 'valeria.ortega', 'pipeline: corrige tipos en tabla de clientes']
+          ]) +
+          '<h4>Corridas registradas en MLflow</h4>' +
+          tb(['Corrida', 'Autor', 'Partición', 'AUC entren.', 'AUC valid.'], [
+            ['r-211', 'mateo.rios', 'Aleatoria por fila (un mismo cliente en ambos conjuntos)', t('0.97'), t('0.94')],
+            ['r-214', 'andres.quintero', 'Por cliente (sin clientes repetidos)', t('0.78'), t('0.71')]
+          ]) +
+          '<p class="note">Cláusula del contrato con Banco Meridian: el pago final y el bono del equipo de ML se activan con un AUC de validación igual o mayor a 0.90.</p>' +
+          '<h4>Backups: lo que dice el panel frente al disco</h4>' +
+          tb(['Noches', 'Panel (backup_status)', 'Tamaño real en disco'], [
+            ['Hace 13 noches', 'OK', '412 GB'],
+            ['Las últimas 12 noches', 'OK (12 de 12)', t('0 MB')]
+          ]) +
+          '<h4>Auditoría de acceso</h4>' +
+          tb(['Hora', 'Usuario', 'Acción'], [
+            [t('20:15'), 'sofia.mejia', 'UPDATE backup_status SET estado = OK (12 filas)'],
+            [t('20:52'), 'andres.quintero', 'SELECT en storage_audit (tamaños reales)']
+          ]) +
+          '<p class="note">Sin backups válidos, un incidente en la cripta significaría perder la base de clientes completa.</p>';
+      }
+    },
+    {
+      n: 7, title: 'Coartadas verificables', variable: 'Pagos, videollamada y actividad en la consola',
+      body: function () {
+        return '<h4>Cafetería, piso 2 · pagos con tarjeta</h4>' +
+          tb(['Hora', 'Titular', 'Monto'], [
+            [t('19:45'), 'Camila Duarte', '$6.000 COP'],
+            [t('21:31'), 'Valeria Ortega', '$8.500 COP']
+          ]) +
+          '<h4>Videollamada con el cliente Helios (grabada)</h4>' +
+          '<p style="margin:0">Julián Peña, sala 4C, cámara encendida de 21:00 a 21:50. Participan dos personas externas.</p>' +
+          '<h4>Consola de base de datos de Sofía, consultas por intervalos de 4 minutos</h4>' +
+          bars([['21:20-21:24', 12], ['21:24-21:28', 12], ['21:28-21:32', 12], ['21:32-21:36', 12], ['21:36-21:40', 12]], 15) +
+          tb(['Dato de la sesión', 'Valor'], [
+            ['Consulta ejecutada', 'SELECT count(*) FROM backup_status (idéntica cada vez)'],
+            ['Separación entre consultas', t('20 segundos exactos')],
+            ['Actividad de teclado y mouse', t('última a las 21:25:50 · siguiente a las 21:37:52')]
+          ]) +
+          '<p class="note">Sesión abierta sin pausas desde su puesto en la oficina abierta, de 21:20 a 22:25.</p>';
+      }
+    },
+    {
+      n: 8, title: 'Declaraciones de los sospechosos', variable: 'Lo que dice cada persona',
+      body: function () {
+        return '<h4>Interrogatorios</h4>' +
+          quote('Valeria Ortega', '“Estuve en la cafetería desde las 21:20. Dejé mi tarjeta en mi escritorio, en el piso 4. No volví a la cripta de servidores.”') +
+          quote('Mateo Ríos', '“Salí a las 20:45 y me fui a mi casa. No regresé al edificio.”') +
+          quote('Camila Duarte', '“Me fui a las 20:50. Estaba cansada y molesta por lo del dashboard.”') +
+          quote('Julián Peña', '“Estuve en una videollamada con un cliente hasta cerca de las 22:00.”') +
+          quote('Sofía Mejía', '“Revisé los backups entre las 21:08 y las 21:18, y después no me moví de mi puesto. A las 22:29 entré a buscar a Andrés porque no contestaba el teléfono. Hacia las 21:27 vi a alguien con capucha gris en el pasillo, pero no distinguí quién era.”') +
+          '<p class="note">Una declaración no es un dato verificado. Contrástenla con los registros.</p>';
+      }
+    }
+  ];
+
+  var STEPS = [
+    '<b>Ventana del crimen.</b> El reloj de Andrés pierde la señal a las 21:32 tras un pico de pulsaciones, y el forense fija la muerte entre 21:30 y 21:35. Sofía salió de la cripta a las 21:18, antes del crimen.',
+    '<b>Primer señuelo: Valeria.</b> La única tarjeta dentro de la cripta en esa ventana es la suya (21:28 a 21:36), pero su teléfono estaba en la cafetería y pagó allí a las 21:31. La tarjeta estaba en la cripta; Valeria no. Alguien la usó.',
+    '<b>Segundo señuelo: Mateo.</b> Tiene todo para parecer culpable: la capucha gris de la Parca, su Mazda dentro del edificio de 21:17 a 21:47, su teléfono en el pasillo AP-4B de 21:24 a 21:39, una mentira (“no regresé”) y un motivo fuerte (la fuga de datos de su modelo). Pero no tiene acceso, y su teléfono nunca pasó por AP-4A, donde está el puesto de Valeria: desde el ascensor P2 se llega al pasillo sin cruzar la oficina. No pudo tomar la tarjeta. Mintió por miedo: era un testigo, no el asesino.',
+    '<b>Quién pudo tomar la tarjeta.</b> Solo quien estaba en la oficina abierta (AP-4A): Julián tiene una videollamada grabada con cámara encendida, Camila se fue a las 20:52 y queda Sofía, que además le dijo a Valeria por chat “yo cuido tu puesto”.',
+    '<b>La coartada era una máquina.</b> Desde las 21:20 la consola de Sofía ejecuta la misma consulta cada 20 segundos exactos, sin ninguna pulsación de teclado entre las 21:25:50 y las 21:37:52, y su teléfono quedó en AP-4A. Un script y un teléfono olvidado simulaban que seguía en su puesto. Además dijo haber visto una capucha gris en el pasillo a las 21:27, cuando según su propio teléfono estaba en la oficina: estuvo en el pasillo, y por eso conocía la capucha de Mateo.',
+    '<b>El motivo.</b> Las últimas 12 noches los backups pesan 0 MB, pero el panel decía OK porque Sofía editó la tabla a las 20:15. A las 20:52 Andrés consultó el almacenamiento real y la citó en la cripta; iba a escalar a Dirección. Mateo también tenía motivo, pero no tuvo la oportunidad. Los demás motivos (ascenso, roadmap, dashboard) existían, pero ninguno coincide con la evidencia física.'
+  ];
+  var CONCEPTS = [
+    '<b>Cruce de fuentes.</b> La contradicción de la tarjeta apareció al unir el lector de la puerta con el Wi-Fi y los pagos por hora. Ninguna tabla la mostraba sola.',
+    '<b>Sesgo de confirmación.</b> Dos sospechosos con evidencia directa (Valeria y Mateo) atrajeron todas las miradas. La culpable era quien “encontró” el cuerpo.',
+    '<b>Detección de anomalías.</b> Una consulta idéntica cada 20 segundos exactos no es comportamiento humano: es un proceso automatizado. También un pico de 156 bpm como valor atípico (outlier).',
+    '<b>Series de tiempo y trayectorias.</b> Reconstruir el recorrido de cada teléfono permitió descartar a Mateo: nunca pasó por la zona donde estaba la tarjeta.',
+    '<b>Calidad e integridad de datos.</b> Un panel que dice OK mientras el disco muestra 0 MB es un dato falsificado. Y un AUC de 0.94 frente a 0.71 con partición limpia delata fuga de datos (data leakage): el señuelo de Mateo.'
+  ];
+
+  /* ---------- Estado ---------- */
+  function def() {
+    return { team: '', start: null, end: null, opened: [], notes: {}, out: {}, matrix: {}, hints: 0,
+             wrong: 0, closed: false, gaveUp: false, pick: { culprit: '', motive: '', method: '', why: '' }, result: null };
+  }
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) {
+        var o = JSON.parse(raw), d = def();
+        for (var k in d) { if (o[k] !== undefined) d[k] = o[k]; }
+        return d;
+      }
+    } catch (e) {}
+    return def();
+  }
+  var S = load();
+  var collapsed = {};
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+  function penalty() {
+    return Math.max(0, S.opened.length - 5) * 4 + S.hints * 10 + S.wrong * 15;
+  }
+  function fmt(ms) {
+    var s = Math.max(0, Math.floor(ms / 1000)), m = Math.floor(s / 60);
+    return (m < 10 ? '0' : '') + m + ':' + (s % 60 < 10 ? '0' : '') + (s % 60);
+  }
+  function elapsed() {
+    if (!S.start) return 0;
+    return (S.end || Date.now()) - S.start;
+  }
+  function startClock() {
+    if (!S.start) { S.start = Date.now(); save(); }
+  }
+
+  /* ---------- Render ---------- */
+  function renderStatus() {
+    $('st-clues').textContent = S.opened.length + '/' + TOTAL;
+    $('st-pts').textContent = Math.max(0, 100 - penalty());
+    $('timer').textContent = fmt(elapsed());
+  }
+
+  function renderSuspects() {
+    $('suspects').innerHTML = SUS.map(function (s) {
+      var out = !!S.out[s.id];
+      return '<article class="card suspect' + (out ? ' out' : '') + '" id="s-' + s.id + '">' +
+        '<div><h3>' + s.name + '</h3><p class="role">' + s.role + '</p></div>' +
+        '<dl class="facts">' +
+        '<dt>Acceso a la cripta</dt><dd><span class="tag' + (s.access ? ' yes' : '') + '">' + (s.access ? 'Sí' : 'No') + '</span></dd>' +
+        '<dt>Vehículo</dt><dd>' + s.car + '</dd>' +
+        '<dt>Disfraz</dt><dd>' + s.wear + '</dd>' +
+        '</dl>' +
+        '<label class="sr" for="n-' + s.id + '">Notas sobre ' + s.name + '</label>' +
+        '<textarea id="n-' + s.id + '" data-note="' + s.id + '" rows="2" placeholder="Notas del aquelarre sobre ' + s.name.split(' ')[0] + '"></textarea>' +
+        '<button class="btn small" type="button" data-out="' + s.id + '" aria-pressed="' + out + '">' + (out ? 'Reabrir sospechoso' : 'Descartar sospechoso') + '</button>' +
+        '</article>';
+    }).join('');
+    SUS.forEach(function (s) { $('n-' + s.id).value = S.notes[s.id] || ''; });
+  }
+
+  function renderClues() {
+    $('clues').innerHTML = CLUES.map(function (c) {
+      var open = S.opened.indexOf(c.n) !== -1;
+      var show = open && !collapsed[c.n];
+      return '<article class="clue ' + (show ? 'open' : (open ? '' : 'locked')) + '" id="c-' + c.n + '">' +
+        '<button class="clue-head" type="button" data-clue="' + c.n + '" aria-expanded="' + show + '">' +
+        '<span class="tab">Pista ' + c.n + '</span>' +
+        '<span class="clue-title">' + c.title + '</span>' +
+        '<span class="clue-var">' + (open ? 'Variable: ' + c.variable : 'Sin abrir') + '</span>' +
+        '</button>' +
+        (show ? '<div class="clue-body">' + c.body() + '</div>' : '') +
+        '</article>';
+    }).join('');
+  }
+
+  function renderHints() {
+    $('hints').innerHTML = HINTS.slice(0, S.hints).map(function (h) { return '<li>' + h + '</li>'; }).join('');
+    var b = $('hint-btn');
+    if (S.hints >= HINTS.length) { b.disabled = true; b.textContent = 'Sin más ayudas'; }
+    else { b.disabled = false; b.textContent = 'Invocar una ayuda (−10 pts)'; }
+  }
+
+  function renderMatrix() {
+    $('matrix-body').innerHTML = SUS.map(function (s) {
+      return '<tr><th scope="row">' + s.name + '</th>' + CRIT.map(function (c, i) {
+        var v = S.matrix[s.id + ':' + i] || 0;
+        return '<td><button class="cell" type="button" data-m="' + s.id + ':' + i + '" data-s="' + v +
+          '" aria-label="' + s.name + ', ' + c + ': ' + LAB[v] + '">' + LAB[v] + '</button></td>';
+      }).join('') + '</tr>';
+    }).join('');
+  }
+
+  function renderPick() {
+    $('pick-culprit').innerHTML = SUS.map(function (s) {
+      return '<label><input type="radio" name="culprit" value="' + s.id + '"' + (S.pick.culprit === s.id ? ' checked' : '') + '><span>' + s.name + '</span></label>';
+    }).join('');
+    $('motive').value = S.pick.motive || '';
+    $('method').value = S.pick.method || '';
+    $('why').value = S.pick.why || '';
+    updateCount();
+  }
+
+  function updateCount() {
+    var n = $('why').value.trim().length;
+    $('why-count').textContent = n + ' de 60 caracteres mínimos';
+  }
+
+  function rankOf(p) {
+    if (p >= 85) return 'Cazafantasmas de datos';
+    if (p >= 60) return 'Analista de ultratumba';
+    if (p >= 35) return 'Aprendiz de brujería';
+    return 'Fantasma despistado';
+  }
+
+  function renderResult() {
+    var box = $('result');
+    $('lock').disabled = !!S.closed;
+    if (!S.closed || !S.result) { box.innerHTML = ''; return; }
+    var r = S.result;
+    var culprit = SUS.filter(function (s) { return s.id === 'sofia'; })[0];
+    var title = r.gaveUp ? 'Caso revelado' : 'Caso cerrado';
+    var summary = 'Aquelarre: ' + (S.team || 'sin nombre') + ' | Culpable: ' + (r.gaveUp ? 'no acusado' : culprit.name) +
+      ' | Puntos: ' + r.pts + '/100 | Tiempo: ' + fmt(r.time) + ' | Pistas abiertas: ' + S.opened.length + '/' + TOTAL;
+    var html = '<div class="result">' +
+      '<p class="eyebrow">' + title + '</p>' +
+      '<div class="score">' + r.pts + '<small> / 100</small></div>' +
+      '<p style="margin:0"><b>' + rankOf(r.pts) + '.</b> El culpable es <b>' + culprit.name + '</b>.</p>' +
+      '<dl class="facts">' +
+      '<dt>Culpable</dt><dd>' + (r.gaveUp ? 'No presentaron acusación' : (r.pick.culprit === 'sofia' ? 'Correcto' : 'Incorrecto')) + '</dd>' +
+      '<dt>Motivo</dt><dd>' + (r.gaveUp ? '—' : (r.pick.motive === 'm5' ? 'Correcto' : 'No coincide')) + '</dd>' +
+      '<dt>Método</dt><dd>' + (r.gaveUp ? '—' : (r.pick.method === 't5' ? 'Correcto' : 'No coincide')) + '</dd>' +
+      '<dt>Tiempo</dt><dd>' + fmt(r.time) + '</dd>' +
+      '<dt>Penalizaciones</dt><dd>−' + r.pen + ' pts (' + S.opened.length + ' pistas, ' + S.hints + ' ayudas, ' + S.wrong + ' intentos fallidos)</dd>' +
+      '</dl>';
+    if (!r.gaveUp && S.pick.why) {
+      html += '<h4>Justificación del aquelarre</h4><p class="why"></p>';
+    }
+    html += '<h4>Reconstrucción del caso</h4><ol>' + STEPS.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ol>' +
+      '<p class="note" style="margin:0">Comparen su justificación con estos pasos: una buena respuesta cita la hora del crimen, la contradicción entre tarjeta y Wi-Fi, la mentira de Mateo y el motivo.</p>' +
+      '<h4>Conceptos aplicados</h4><ul>' + CONCEPTS.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>' +
+      '<h4>Resumen para anotar</h4>' +
+      '<label class="sr" for="sum">Resumen del aquelarre</label>' +
+      '<textarea id="sum" rows="3" readonly></textarea>' +
+      '<div class="row"><button class="btn" type="button" id="copy-sum">Copiar resumen</button></div>' +
+      '</div>';
+    box.innerHTML = html;
+    $('sum').value = summary;
+    var why = box.querySelector('.why');
+    if (why) why.textContent = S.pick.why;
+    $('copy-sum').addEventListener('click', function () {
+      var ta = $('sum'), b = $('copy-sum');
+      try {
+        navigator.clipboard.writeText(ta.value).then(function () { b.textContent = 'Copiado'; }, function () { ta.select(); });
+      } catch (e) { ta.select(); }
+    });
+  }
+
+  function msg(text, cls) {
+    var m = $('accuse-msg');
+    m.textContent = text;
+    m.className = 'msg-line' + (cls ? ' ' + cls : '');
+  }
+
+  function closeCase(gaveUp) {
+    var p = S.pick;
+    var pen = penalty();
+    var pts = 0;
+    if (!gaveUp) {
+      pts = 50;
+      if (p.motive === 'm5') pts += 25;
+      if (p.method === 't5') pts += 25;
+      pts = Math.max(0, pts - pen);
+    }
+    if (!S.start) S.start = Date.now();
+    S.end = Date.now();
+    S.closed = true;
+    S.gaveUp = !!gaveUp;
+    S.result = { pts: pts, pen: pen, time: S.end - S.start, gaveUp: !!gaveUp, pick: { culprit: p.culprit, motive: p.motive, method: p.method } };
+    save();
+    renderStatus();
+    renderResult();
+    queueSync(50);
+    msg('', '');
+    var r = $('result');
+    if (r.scrollIntoView) r.scrollIntoView({ block: 'start' });
+  }
+
+
+  /* ---------- Ventana de nombre del equipo ---------- */
+  var isFac = false;
+  function applyGate() {
+    var locked = !isFac && !String(S.team || '').trim();
+    $('gate').hidden = !locked;
+    $('main').hidden = locked;
+    if (locked) { setTimeout(function () { $('gate-team').focus(); }, 0); }
+  }
+  $('gate-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var name = $('gate-team').value.trim();
+    if (name.length < 2) { $('gate-msg').textContent = 'Escriban un nombre de al menos 2 caracteres.'; return; }
+    $('gate-msg').textContent = '';
+    S.team = name.slice(0, 40);
+    $('team').value = S.team;
+    save();
+    queueSync(0);
+    applyGate();
+    window.scrollTo(0, 0);
+  });
+
+  /* ---------- Eventos ---------- */
+  $('team').addEventListener('input', function (e) { S.team = e.target.value; save(); queueSync(800); });
+
+  $('suspects').addEventListener('input', function (e) {
+    var id = e.target.getAttribute('data-note');
+    if (id) { S.notes[id] = e.target.value; save(); }
+  });
+  $('suspects').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-out]');
+    if (!b) return;
+    var id = b.getAttribute('data-out');
+    S.out[id] = !S.out[id];
+    save();
+    var card = $('s-' + id);
+    card.classList.toggle('out', !!S.out[id]);
+    b.textContent = S.out[id] ? 'Reabrir sospechoso' : 'Descartar sospechoso';
+    b.setAttribute('aria-pressed', String(!!S.out[id]));
+  });
+
+  $('clues').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-clue]');
+    if (!b) return;
+    var n = +b.getAttribute('data-clue');
+    if (S.opened.indexOf(n) === -1) {
+      S.opened.push(n);
+      startClock();
+      delete collapsed[n];
+    } else {
+      collapsed[n] = !collapsed[n];
+    }
+    save();
+    renderClues();
+    renderStatus();
+    queueSync();
+    var again = document.querySelector('[data-clue="' + n + '"]');
+    if (again) again.focus();
+  });
+
+  $('hint-btn').addEventListener('click', function () {
+    if (S.hints >= HINTS.length) return;
+    S.hints++;
+    startClock();
+    save();
+    renderHints();
+    renderStatus();
+    queueSync();
+  });
+
+  $('matrix-body').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-m]');
+    if (!b) return;
+    var key = b.getAttribute('data-m');
+    var v = ((S.matrix[key] || 0) + 1) % 3;
+    S.matrix[key] = v;
+    save();
+    b.setAttribute('data-s', v);
+    b.textContent = LAB[v];
+    var lbl = b.getAttribute('aria-label').replace(/: [^:]*$/, ': ' + LAB[v]);
+    b.setAttribute('aria-label', lbl);
+  });
+
+  $('pick-culprit').addEventListener('change', function (e) {
+    if (e.target.name === 'culprit') { S.pick.culprit = e.target.value; save(); }
+  });
+  $('motive').addEventListener('change', function (e) { S.pick.motive = e.target.value; save(); });
+  $('method').addEventListener('change', function (e) { S.pick.method = e.target.value; save(); });
+  $('why').addEventListener('input', function (e) { S.pick.why = e.target.value; save(); updateCount(); });
+
+  $('accuse-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (S.closed) return;
+    var p = S.pick;
+    if (!p.culprit || !p.motive || !p.method) {
+      msg('Elijan culpable, motivo y método antes de acusar.', 'bad');
+      return;
+    }
+    if (p.why.trim().length < 60) {
+      msg('La justificación necesita al menos 60 caracteres. Citen las evidencias que sostienen la acusación.', 'bad');
+      return;
+    }
+    if (p.culprit !== 'sofia') {
+      S.wrong++;
+      startClock();
+      save();
+      renderStatus();
+      queueSync();
+      msg((WRONG[p.culprit] || 'Esa acusación no se sostiene con la evidencia.') + ' Crucen de nuevo las fuentes. Pierden 15 puntos.', 'bad');
+      return;
+    }
+    closeCase(false);
+  });
+
+  var giveArmed = false, giveTimer = null;
+  $('giveup').addEventListener('click', function () {
+    var b = $('giveup');
+    if (!giveArmed) {
+      giveArmed = true;
+      b.textContent = 'Confirmar: se pierden todos los puntos';
+      giveTimer = setTimeout(function () { giveArmed = false; b.textContent = 'Rendirme y ver la solución'; }, 4000);
+      return;
+    }
+    clearTimeout(giveTimer);
+    giveArmed = false;
+    b.textContent = 'Rendirme y ver la solución';
+    closeCase(true);
+  });
+
+  var resetArmed = false, resetTimer = null;
+  $('reset').addEventListener('click', function () {
+    var b = $('reset');
+    if (!resetArmed) {
+      resetArmed = true;
+      b.textContent = 'Pulsa de nuevo para borrar todo';
+      resetTimer = setTimeout(function () { resetArmed = false; b.textContent = 'Reiniciar caso'; }, 4000);
+      return;
+    }
+    clearTimeout(resetTimer);
+    resetArmed = false;
+    b.textContent = 'Reiniciar caso';
+    S = def();
+    collapsed = {};
+    save();
+    clearRemote();
+    init();
+    window.scrollTo(0, 0);
+  });
+
+  /* ---------- Envío de avance al facilitador (servidor propio) ---------- */
+  var PID_KEY = 'aurora-1031-pid';
+  function makePid() {
+    var p;
+    try { p = localStorage.getItem(PID_KEY); } catch (e) {}
+    if (!p) {
+      p = 'p-' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+      try { localStorage.setItem(PID_KEY, p); } catch (e) {}
+    }
+    return p;
+  }
+  var PID = makePid();
+  var sync = { on: true, last: '', busy: false, dirty: false, timer: null };
+  function setSyncLabel(text) {
+    var el = $('sync-state'); if (el) el.textContent = text || '';
+    var top = $('sync-top'); if (top) top.textContent = text || '';
+  }
+  function snapshot() {
+    var closed = !!(S.closed && S.result);
+    var solved = closed && !S.result.gaveUp;
+    return {
+      team: (S.team || '').slice(0, 40),
+      status: closed ? (S.result.gaveUp ? 'gaveup' : 'solved') : 'playing',
+      start: S.start || null,
+      end: closed ? S.end : null,
+      timeMs: closed ? S.result.time : null,
+      clues: S.opened.length,
+      opened: S.opened.slice(),
+      out: SUS.filter(function (s) { return S.out[s.id]; }).map(function (s) { return s.id; }),
+      hints: S.hints,
+      wrong: S.wrong,
+      pts: closed ? S.result.pts : null,
+      culprit: solved ? S.result.pick.culprit : '',
+      motiveOk: solved ? S.result.pick.motive === 'm5' : null,
+      methodOk: solved ? S.result.pick.method === 't5' : null
+    };
+  }
+  function queueSync(delay) {
+    if (!sync.on) return;
+    clearTimeout(sync.timer);
+    sync.timer = setTimeout(flush, delay === undefined ? 400 : delay);
+  }
+  function flush() {
+    if (!sync.on) return;
+    if (sync.busy) { sync.dirty = true; return; }
+    var d = snapshot();
+    if (!S.start && !d.team) return;
+    var sig = JSON.stringify(d);
+    if (sig === sync.last) return;
+    sync.busy = true;
+    fetch('/api/progress', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pid: PID, data: d })
+    }).then(function (r) {
+      if (!r.ok) throw new Error(String(r.status));
+      sync.last = sig;
+      setSyncLabel('Tu avance se envía al facilitador.');
+    }).catch(function () {
+      setSyncLabel('Sin conexión con el facilitador. Se reintentará solo.');
+      setTimeout(function () { queueSync(0); }, 5000);
+    }).then(function () {
+      sync.busy = false;
+      if (sync.dirty) { sync.dirty = false; queueSync(100); }
+    });
+  }
+  function clearRemote() {
+    sync.last = '';
+    fetch('/api/progress', {
+      method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pid: PID })
+    }).catch(function () {});
+  }
+
+  /* ---------- Arranque ---------- */
+  function init() {
+    $('team').value = S.team || '';
+    renderSuspects();
+    renderClues();
+    renderHints();
+    renderMatrix();
+    renderPick();
+    renderResult();
+    renderStatus();
+    msg('', '');
+    $('gate-team').value = '';
+    applyGate();
+  }
+  init();
+  if (S.team || S.start) { queueSync(0); }
+  setInterval(function () { if (S.start && !S.end) renderStatus(); }, 1000);
+})();
+</script>
+
+</body></html>

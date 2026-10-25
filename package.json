@@ -1,0 +1,8 @@
+{
+  "name": "quien-asesino-al-data-scientist",
+  "version": "1.0.0",
+  "description": "Juego de deducción con panel para el facilitador (sin dependencias)",
+  "private": true,
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" }
+}
