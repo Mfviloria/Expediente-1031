@@ -16,6 +16,10 @@ FACILITATOR_PASSWORD=tu_clave node server.js      # Windows PowerShell: $env:FAC
 - Si no defines `FACILITATOR_PASSWORD`, se genera una contraseña temporal y se imprime en la consola.
 
 ## Publicarlo en internet
+En Netlify, `netlify.toml` publica la carpeta `public`, que contiene la página principal, y sirve el panel en `/facilitador`. No se necesita un comando de compilación para estas páginas.
+
+El servidor `server.js` no se ejecuta en el alojamiento estático de Netlify. Por tanto, esta publicación permite abrir el juego y la página del panel, pero las rutas `/api/*` (acceso del facilitador y tablero compartido) requieren adaptar el servidor a Netlify Functions y almacenamiento persistente antes de poder usarlas en Netlify.
+
 Sirve en cualquier hosting de Node (Render, Railway, Fly.io, un VPS...): comando de inicio `node server.js`, variable `FACILITATOR_PASSWORD`, y que el hosting ponga HTTPS (si va detrás de un proxy, `TRUST_PROXY=1`). Variables opcionales: `PORT`, `DATA_DIR`.
 
 ## Notas
