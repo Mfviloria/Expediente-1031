@@ -1,6 +1,15 @@
 [build]
   publish = "public"
 
+[functions]
+  directory = "netlify/functions"
+
+[[headers]]
+  for = "/facilitador*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "no-store"
+
 [[redirects]]
   from = "/facilitador"
   to = "/facilitador.html"

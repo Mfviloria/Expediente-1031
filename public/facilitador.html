@@ -89,8 +89,9 @@ td.name{font-weight:600;white-space:normal;min-width:140px}
   function poll() {
     fetch('/api/board', { cache: 'no-store' }).then(function (r) {
       if (r.status === 401) { clearInterval(timer); timer = null; show(false); return null; }
+      if (!r.ok) throw new Error('No se pudo actualizar el tablero.');
       return r.json();
-    }).then(function (j) { if (j) { rows = j.rows || []; render(); } }).catch(function () {});
+    }).then(function (j) { if (j) { rows = j.rows || []; render(); } }).catch(function () { $('summary').textContent = 'Sin conexión con el tablero. Reintentando…'; });
   }
   function start() { show(true); poll(); if (!timer) timer = setInterval(poll, 2000); }
 
