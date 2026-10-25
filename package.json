@@ -1,8 +1,25 @@
 {
   "name": "quien-asesino-al-data-scientist",
   "version": "1.0.0",
-  "description": "Juego de deducción con panel para el facilitador (sin dependencias)",
+  "description": "Juego de deducción con panel privado para el facilitador en Netlify",
   "private": true,
-  "scripts": { "start": "node server.js" },
-  "engines": { "node": ">=18" }
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --import tsx --experimental-test-module-mocks --test tests/*.test.mts",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@netlify/database": "^2.0.1",
+    "@netlify/functions": "^6.0.3",
+    "drizzle-orm": "^1.0.0-beta.22"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "drizzle-kit": "^1.0.0-beta.22",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
 }
